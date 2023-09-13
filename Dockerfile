@@ -2,7 +2,7 @@ FROM oven/bun:1.0 AS builder
 WORKDIR /app
 COPY . .
 RUN bun install
-RUN bun build index.ts --compile --outfile server
+RUN bun build ./src/index.ts --compile --outfile server
 
 FROM debian:bullseye
 WORKDIR /app
