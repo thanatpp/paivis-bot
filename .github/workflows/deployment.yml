@@ -40,9 +40,9 @@ jobs:
         uses: "google-github-actions/deploy-cloudrun@v0"
         with:
           image: ${{ env.IMAGE_NAME }}
-          region: us-central1
-          service: app
-          flags: --port=8080
+          region: asia-southeast1
+          service: paivis-bot
+          flags: --port=3000
 
       - name: Test URL
         run: curl "${{ steps.deploy.outputs.url }}"
