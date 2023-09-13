@@ -8,4 +8,4 @@ FROM debian:bullseye
 WORKDIR /app
 COPY --from=builder /app/server /app/server
 EXPOSE 3000
-CMD [ "/app/server" ]docker run -p 8080:8080 <your-image-name>
+CMD ["/app/server"]

@@ -20,6 +20,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Unit test
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+        run: bun install & bun test
+
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v0
         with:
