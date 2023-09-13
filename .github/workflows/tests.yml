@@ -8,7 +8,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-        
+
       - name: Set up bun
         uses: oven-sh/setup-bun@v1
         with:
@@ -18,7 +18,7 @@ jobs:
         run: bun install
 
       - name: Check lint
-        run: bun eslint src/**/*.ts
+        run: bun eslint ./*.ts
 
       - name: Run unit test
         run: bun test
