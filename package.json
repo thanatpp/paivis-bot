@@ -3,7 +3,7 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "start": "bun run ./src/index.ts",
+    "start": "bun --watch run ./src/index.ts",
     "test": "bun run test",
     "lint": "bun eslint src/**/*.ts",
     "lint-fix": "bun run --silent lint -- --fix"
@@ -20,6 +20,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@line/bot-sdk": "^7.5.2",
     "baojs": "^0.2.1"
   }
 }

@@ -1,10 +1,9 @@
 import Bao from "baojs";
+import webhookRoute from "./routes/webhook.route";
 
 const app = new Bao();
 
-app.get("/", (ctx) => {
-  return ctx.sendText("Hello World!");
-});
+webhookRoute(app);
 
 const server = app.listen();
 
