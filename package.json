@@ -2,6 +2,12 @@
   "name": "paivis-bot",
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "start": "bun run index.ts",
+    "test": "bun run test",
+    "lint": "bun eslint src/**/*.ts",
+    "lint-fix": "bun run --silent lint -- --fix"
+  },
   "devDependencies": {
     "bun-types": "latest"
   },
@@ -9,6 +15,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "baojs": "^0.2.1"
+    "baojs": "^0.2.1",
+    "eslint": "^8.49.0"
   }
 }
