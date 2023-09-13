@@ -3,5 +3,5 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "curl -fsSL https://bun.sh/install | bash && ~/.bun/bin/bun install",
   "buildCommand": "~/.bun/bin/bun build index.ts --compile --outfile server",
-  "routes": [{ "src": "/(.*)", "dest": "server"}]
+  "devCommand": "~/.bun/bin/bun run server"
 }
