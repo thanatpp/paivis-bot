@@ -20,7 +20,10 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@line/bot-sdk": "^7.5.2",
+=======
+>>>>>>> f34e49ed0f5b5043f75b02159c4b145ed64f2ed8
     "baojs": "^0.2.1"
   }
 }
