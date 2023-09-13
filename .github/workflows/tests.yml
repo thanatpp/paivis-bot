@@ -13,12 +13,12 @@ jobs:
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
-      
+
       - name: Install package
         run: bun install
 
       - name: Check lint
-        run: bun eslint ./*.ts
+        run: bun eslint src/**/*.ts
 
       - name: Run unit test
         run: bun test
