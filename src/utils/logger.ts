@@ -28,9 +28,9 @@ export const logger = pino({
   },
 }).child({ service: "paivis" });
 
-export const loggerInbound = async (ctx: Context) => {
+export const loggerInbound = (ctx: Context) => {
   const path = ctx.path;
-  const request = ctx.extra.req;
+  const request: unknown = ctx.extra.req;
 
   logger.info({ type: "INBOUND", path, request });
   return ctx;

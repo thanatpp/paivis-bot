@@ -1,4 +1,4 @@
-const line = require("@line/bot-sdk");
+import line from "@line/bot-sdk";
 import { Context } from "baojs";
 import { HEADER_LINE_SIGNATURE, QUERY_API_KEY } from "../utils/constant";
 
@@ -22,7 +22,7 @@ export async function webhookMiddleware(ctx: Context) {
   return ctx;
 }
 
-function isRequestFromLine(body: string, signature: string) {
+function isRequestFromLine(body: string, signature: string): boolean {
   return line.validateSignature(
     body,
     process.env.LINE_YOUR_CHANNEL_SECRET,
