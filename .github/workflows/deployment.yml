@@ -31,6 +31,8 @@ jobs:
           echo API_KEY=${{ secrets.API_KEY }} >> .env
           echo LINE_CHANNEL_ACCESS_TOKEN=${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }} >> .env
           echo LINE_CHANNEL_SECRET=${{ secrets.LINE_CHANNEL_SECRET }} >> .env
+          echo AIRTABLE_API_KEY=${{ secrets.AIRTABLE_API_KEY }} >> .env
+          echo AIRTABLE_EXPENSE_BASE=${{ secrets.AIRTABLE_EXPENSE_BASE }} >> .env
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v0
