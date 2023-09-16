@@ -1,6 +1,6 @@
 import line from "@line/bot-sdk";
 import { Context } from "baojs";
-import { HEADER_LINE_SIGNATURE, QUERY_API_KEY } from "../utils/constant";
+import { HEADER_LINE_SIGNATURE, QUERY_API_KEY } from "../utils/constant.util";
 
 export async function webhookMiddleware(ctx: Context) {
   const key = ctx.query.get(QUERY_API_KEY);

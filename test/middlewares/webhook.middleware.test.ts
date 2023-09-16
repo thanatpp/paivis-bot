@@ -1,4 +1,4 @@
-const line = require("@line/bot-sdk");
+import line from "@line/bot-sdk";
 import { test, spyOn, describe, expect } from "bun:test";
 import { webhookMiddleware } from "../../src/middlewares/webhook.middleware";
 import { HEADER_LINE_SIGNATURE, QUERY_API_KEY } from "../../src/utils/constant";
