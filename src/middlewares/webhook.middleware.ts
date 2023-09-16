@@ -25,7 +25,7 @@ export async function webhookMiddleware(ctx: Context) {
 function isRequestFromLine(body: string, signature: string): boolean {
   return line.validateSignature(
     body,
-    process.env.LINE_YOUR_CHANNEL_SECRET,
+    process.env.LINE_CHANNEL_SECRET,
     signature
   );
 }
