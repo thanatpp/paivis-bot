@@ -43,12 +43,12 @@ export async function createExpense(
 
 export async function getExpenseByDate(date: Date): Promise<ExpenseReccord[]> {
   try {
-    const _date = date.setHours(0, 0, 0, 0).toString();
+    date.setHours(0, 0, 0, 0);
     const filter =
       'OR(IS_SAME({Date}, "' +
-      _date +
+      date.toString() +
       '"),  IS_AFTER({Date}, "' +
-      _date +
+      date.toString() +
       '"))';
     logger.info("Start get expense by condition: " + filter);
     const result = await expenseTable()
