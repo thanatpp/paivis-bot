@@ -1,69 +1,96 @@
-import Airtable from "airtable";
 import { logger } from "../utils/logger.util";
 import { ExpenseReccord } from "../models/expense.model";
+import { Client, LogLevel } from "@notionhq/client";
+import { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 
-const tableName = "expense-tracker";
+const notion = new Client({
+  auth: process.env.NOTION_TOKEN,
+  logLevel: LogLevel.INFO,
+});
 
-const expenseTable = () => {
-  return new Airtable({ apiKey: process.env.AIRTABLE_API_KEY })
-    .base(process.env.AIRTABLE_EXPENSE_BASE)
-    .table(tableName);
+export const categorys: {
+  [key: string]: string;
+} = {
+  t: "transportation",
+  f: "food",
+  d: "drinks",
+  c: "clothes",
+  g: "game",
+  h: "health",
+  m: "miscellaneous",
+  s: "shopping",
+  e: "entertainment",
+  b: "bill",
+  r: "residence",
 };
 
 export async function createExpense(
-  name: string,
-  category: string,
-  amount: string,
-  date: Date
-) {
+  payload: ExpenseReccord
+): Promise<ExpenseReccord> {
   try {
-    const payload: ExpenseReccord = {
-      Name: name.trim(),
-      Category: category,
-      Amount: Number(amount),
-      Date: date.toISOString(),
-    };
-
-    logger.info(
-      { payload: JSON.stringify(payload) },
-      "Start create expense record"
-    );
-    const recorded = await expenseTable().create(
-      { ...payload },
-      { typecast: true }
-    );
-
-    logger.info(`End create expense recorded id: ${recorded.id} success`);
-    return recorded;
+    const response = await notion.pages.create({
+      parent: {
+        type: "database_id",
+        database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
+      },
+      properties: {
+        Name: {
+          type: "title",
+          title: [
+            {
+              type: "text",
+              text: {
+                content: payload.Name,
+              },
+            },
+          ],
+        },
+        Category: {
+          type: "rich_text",
+          rich_text: [
+            {
+              type: "text",
+              text: {
+                content: payload.Category,
+              },
+            },
+          ],
+        },
+        Amount: {
+          type: "number",
+          number: payload.Amount,
+        },
+        Date: {
+          type: "date",
+          date: {
+            start: payload.Date,
+          },
+        },
+      },
+    });
+    const result = response as PageObjectResponse;
+    return notionPropertiesToObject<ExpenseReccord>(result);
   } catch (err) {
     logger.error("Failed to create expense record");
     throw err;
   }
 }
 
-export async function getExpenseByDate(date: Date): Promise<ExpenseReccord[]> {
+export async function getExpenseByDate(
+  dateTime: Date
+): Promise<ExpenseReccord[]> {
   try {
-    date.setHours(0, 0, 0, 0);
-    const filter =
-      'OR(IS_SAME({Date}, "' +
-      date.toString() +
-      '"),  IS_AFTER({Date}, "' +
-      date.toString() +
-      '"))';
-    logger.info("Start get expense by condition: " + filter);
-    const result = await expenseTable()
-      .select({
-        filterByFormula: filter,
-        sort: [{ field: "Date" }],
-      })
-      .all();
-    const reccords = result.map((r): ExpenseReccord => {
-      return toToObject(r.fields);
+    const response = await notion.databases.query({
+      database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
+      filter: {
+        property: "Date",
+        date: {
+          on_or_after: dateTime.toISOString(),
+        },
+      },
     });
-    logger.info(
-      "End get expense by condition success reccords length: " + reccords.length
-    );
-    return reccords;
+    const results = response.results as PageObjectResponse[];
+    return results.map((r) => notionPropertiesToObject<ExpenseReccord>(r));
   } catch (err) {
     logger.error("Failed to get expense by date");
     throw err;
@@ -72,31 +99,43 @@ export async function getExpenseByDate(date: Date): Promise<ExpenseReccord[]> {
 
 export async function getExpenseFirstReccord(): Promise<ExpenseReccord | null> {
   try {
-    logger.info("Start get expense first reccord");
-    const result = await expenseTable()
-      .select({
-        maxRecords: 1,
-        sort: [{ field: "Date" }],
-      })
-      .firstPage();
-    logger.info("Start get expense first reccord length: " + result.length);
+    const response = await notion.databases.query({
+      database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
+      sorts: [{ property: "Date", direction: "descending" }],
+      page_size: 1,
+    });
 
-    if (result.length === 0) {
+    if (response.results.length === 0) {
       return null;
     }
 
-    return toToObject(result[0].fields);
+    const result = response.results as PageObjectResponse[];
+    return notionPropertiesToObject<ExpenseReccord>(result[0]);
   } catch (err) {
     logger.error("Failed to get expense by date");
     throw err;
   }
 }
 
-const toToObject = (field: Record<string, unknown>): ExpenseReccord => {
-  return {
-    Name: field["Name"]?.toString() ?? "",
-    Category: field["Category"]?.toString() ?? "",
-    Amount: Number(field["Amount"]) ?? 0,
-    Date: field["Date"]?.toString() ?? "",
-  };
-};
+function notionPropertiesToObject<Type>(por: PageObjectResponse): Type {
+  let result = {} as Type;
+  for (const [key, value] of Object.entries(por.properties)) {
+    switch (value.type) {
+      case "title":
+        result = { ...result, [key]: value.title[0].plain_text };
+        break;
+      case "rich_text":
+        result = { ...result, [key]: value.rich_text[0].plain_text };
+        break;
+      case "date":
+        result = { ...result, [key]: value.date?.start ?? "" };
+        break;
+      case "number":
+        result = { ...result, [key]: value.number };
+        break;
+      default:
+        return { ...result, [key]: "" };
+    }
+  }
+  return result;
+}

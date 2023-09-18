@@ -5,6 +5,7 @@ import {
   WebhookRequestBody,
 } from "@line/bot-sdk";
 import {
+  categorys,
   createExpense,
   getExpenseByDate,
   getExpenseFirstReccord,
@@ -23,22 +24,6 @@ export default async function webhookService(
   }
 }
 
-const category: {
-  [key: string]: string;
-} = {
-  t: "transportation",
-  f: "food",
-  d: "drinks",
-  c: "clothes",
-  g: "game",
-  h: "health",
-  m: "miscellaneous",
-  s: "shopping",
-  e: "entertainment",
-  b: "bill",
-  r: "residence",
-};
-
 async function handleEventMessage(
   event: EventMessage,
   replyToken: string,
@@ -46,21 +31,33 @@ async function handleEventMessage(
 ) {
   if (event.type === "text") {
     const text = event.text.trim();
-    const regex = /^([\d.]+|[ivxlcdm]+)([tfdcghmsebr])([ \wก-๙]+|)$/i;
+    const regex =
+      /^([\d.]+|[ivxlcdm]+)([tfdcghmsebr])([ \wก-๙0-9!@#$%^&*]+|)$/i;
     const match = text.match(regex);
 
     if (match) {
       const ctgKey = match[2].toString().toLowerCase();
-      const ctg = category[ctgKey];
-      const amount = Number(match[1]).toFixed(2);
+      const ctg = categorys[ctgKey];
+      const amount = Number(match[1]);
       const name = match[3] ?? "";
       const date = new Date();
 
-      await createExpense(name, ctg, amount, date);
+      const reccorded = await createExpense({
+        Name: name,
+        Category: ctg,
+        Amount: Number(amount),
+        Date: date.toISOString(),
+      });
+
       const summaryExpense = await summaryTodyExpense(date);
       await client.replyMessage(
         replyToken,
-        createExpenseBubble(name, ctg, amount, summaryExpense)
+        createExpenseBubble(
+          reccorded.Name,
+          reccorded.Category,
+          reccorded.Amount,
+          summaryExpense
+        )
       );
     }
   }
@@ -91,17 +88,17 @@ async function summaryTodyExpense(date: Date) {
 const createExpenseBubble = (
   name: string,
   category: string,
-  amount: string,
+  amount: number,
   summary: number[]
 ) => {
   const detail = [category, name]
     .filter((s) => s.trim().length !== 0)
     .join(", ");
-  const altText = `Expense tracking ฿${amount} ${detail}`;
+  const altText = `Expense tracking ฿${amount.toFixed(2)} ${detail}`;
   const body: FlexComponent[] = [
     {
       type: "text",
-      text: "฿ " + amount,
+      text: "฿ " + amount.toFixed(2),
       weight: "bold",
       size: "xl",
       margin: "md",

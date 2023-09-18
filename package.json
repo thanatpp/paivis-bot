@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@line/bot-sdk": "^7.5.2",
-    "airtable": "^0.12.2",
+    "@notionhq/client": "^2.2.13",
     "baojs": "^0.2.1",
     "pino": "^8.15.1"
   }

@@ -23,8 +23,8 @@ jobs:
           echo API_KEY=${{ secrets.API_KEY }} >> .env
           echo LINE_CHANNEL_ACCESS_TOKEN=${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }} >> .env
           echo LINE_CHANNEL_SECRET=${{ secrets.LINE_CHANNEL_SECRET }} >> .env
-          echo AIRTABLE_API_KEY=${{ secrets.AIRTABLE_API_KEY }} >> .env
-          echo AIRTABLE_EXPENSE_BASE=${{ secrets.AIRTABLE_EXPENSE_BASE }} >> .env
+          echo NOTION_TOKEN=${{ secrets.NOTION_TOKEN }} >> .env
+          echo NOTION_EXPENSE_DATABASE_ID=${{ secrets.NOTION_EXPENSE_DATABASE_ID }} >> .env
 
       - name: Check lint
         run: bun eslint src/**/*.ts
