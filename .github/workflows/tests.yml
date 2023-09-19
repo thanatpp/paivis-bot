@@ -25,6 +25,7 @@ jobs:
           echo LINE_CHANNEL_SECRET=${{ secrets.LINE_CHANNEL_SECRET }} >> .env
           echo NOTION_TOKEN=${{ secrets.NOTION_TOKEN }} >> .env
           echo NOTION_EXPENSE_DATABASE_ID=${{ secrets.NOTION_EXPENSE_DATABASE_ID }} >> .env
+          echo DAILY_PACE=${{ secrets.DAILY_PACE }} >> .env
 
       - name: Check lint
         run: bun eslint src/**/*.ts
