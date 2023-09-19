@@ -9,6 +9,7 @@ import {
   createExpense,
   getExpenseByDate,
   getExpenseFirstReccord,
+  getExpenseLastReccord,
 } from "../modules/expense.module";
 import { createBubble } from "../utils/line.util";
 
@@ -31,8 +32,7 @@ async function handleEventMessage(
 ) {
   if (event.type === "text") {
     const text = event.text.trim();
-    const regex =
-      /^([\d.]+|[ivxlcdm]+)([tfdcghmsebr])([ \wก-๙0-9!@#$%^&*]+|)$/i;
+    const regex = /^([\d.]+|[ivxlcdm]+)([tfdhmn])([ \wก-๙0-9!@#$%^&*]+|)$/i;
     const match = text.match(regex);
 
     if (match) {
@@ -42,14 +42,21 @@ async function handleEventMessage(
       const name = match[3] ?? "";
       const date = new Date();
 
+      const lastReccord = await getExpenseLastReccord();
+      let total = lastReccord?.Total ?? 0;
+      if (ctg !== "note") {
+        total += amount;
+      }
+
       const reccorded = await createExpense({
         Name: name,
         Category: ctg,
         Amount: Number(amount),
         Date: date.toISOString(),
+        Total: total,
       });
 
-      const summaryExpense = await summaryTodyExpense(date);
+      const summaryExpense = await summaryTodyExpense(date, total);
       await client.replyMessage(
         replyToken,
         createExpenseBubble(
@@ -63,29 +70,33 @@ async function handleEventMessage(
   }
 }
 
-async function summaryTodyExpense(date: Date) {
+async function summaryTodyExpense(date: Date, totalUsed: number) {
   const newDate = date;
   newDate.setHours(0, 0, 0, 0);
 
   const reccords = await getExpenseByDate(newDate);
   const firstReccord = await getExpenseFirstReccord();
-
   const lastReccordIndex = reccords.length - 1;
   const lastReccord = reccords[lastReccordIndex];
-
-  const total = reccords.map((r) => r.Amount).reduce((a, b) => a + b);
-  const pace = 300 - total;
+  const usedToday = reccords
+    .filter((r) => r.Category !== "note")
+    .map((r) => r.Amount)
+    .reduce((a, b) => a + b, 0);
 
   if (!firstReccord) {
-    return [total, pace, 1];
+    return [usedToday, +process.env.DAILY_PACE - totalUsed, 1];
   }
 
-  const firstDate = new Date(firstReccord.Date).setHours(0, 0, 0, 0);
-  const lastDate = new Date(lastReccord.Date).setHours(0, 0, 0, 0);
+  const firstDate = new Date(firstReccord.Date);
+  firstDate.setHours(0, 0, 0, 0);
+  const lastDate = new Date(lastReccord.Date);
+  lastDate.setHours(0, 0, 0, 0);
+  console.log(firstDate, lastDate);
   const diffDays =
     Number((lastDate.valueOf() - firstDate.valueOf()) / (1000 * 60 * 60 * 24)) +
     1;
-  return [total, pace, diffDays];
+  const pace = +process.env.DAILY_PACE * diffDays - totalUsed;
+  return [usedToday, pace, diffDays];
 }
 
 const createExpenseBubble = (

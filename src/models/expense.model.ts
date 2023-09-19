@@ -3,4 +3,5 @@ export interface ExpenseReccord {
   Category: string;
   Amount: number;
   Date: string;
+  Total: number;
 }

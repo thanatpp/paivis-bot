@@ -2,6 +2,7 @@ import { logger } from "../utils/logger.util";
 import { ExpenseReccord } from "../models/expense.model";
 import { Client, LogLevel } from "@notionhq/client";
 import { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
+import { pageObjectResponseToObject } from "../utils/notion.util";
 
 const notion = new Client({
   auth: process.env.NOTION_TOKEN,
@@ -14,14 +15,9 @@ export const categorys: {
   t: "transportation",
   f: "food",
   d: "drinks",
-  c: "clothes",
-  g: "game",
   h: "health",
-  m: "miscellaneous",
-  s: "shopping",
-  e: "entertainment",
-  b: "bill",
-  r: "residence",
+  m: "misc",
+  n: "note",
 };
 
 export async function createExpense(
@@ -60,6 +56,10 @@ export async function createExpense(
           type: "number",
           number: payload.Amount,
         },
+        Total: {
+          type: "number",
+          number: payload.Total,
+        },
         Date: {
           type: "date",
           date: {
@@ -69,7 +69,7 @@ export async function createExpense(
       },
     });
     const result = response as PageObjectResponse;
-    return notionPropertiesToObject<ExpenseReccord>(result);
+    return pageObjectResponseToObject<ExpenseReccord>(result);
   } catch (err) {
     logger.error("Failed to create expense record");
     throw err;
@@ -90,7 +90,7 @@ export async function getExpenseByDate(
       },
     });
     const results = response.results as PageObjectResponse[];
-    return results.map((r) => notionPropertiesToObject<ExpenseReccord>(r));
+    return results.map((r) => pageObjectResponseToObject<ExpenseReccord>(r));
   } catch (err) {
     logger.error("Failed to get expense by date");
     throw err;
@@ -98,6 +98,26 @@ export async function getExpenseByDate(
 }
 
 export async function getExpenseFirstReccord(): Promise<ExpenseReccord | null> {
+  try {
+    const response = await notion.databases.query({
+      database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
+      sorts: [{ property: "Date", direction: "ascending" }],
+      page_size: 1,
+    });
+
+    if (response.results.length === 0) {
+      return null;
+    }
+
+    const result = response.results as PageObjectResponse[];
+    return pageObjectResponseToObject<ExpenseReccord>(result[0]);
+  } catch (err) {
+    logger.error("Failed to get expense first reccord");
+    throw err;
+  }
+}
+
+export async function getExpenseLastReccord(): Promise<ExpenseReccord | null> {
   try {
     const response = await notion.databases.query({
       database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
@@ -110,32 +130,9 @@ export async function getExpenseFirstReccord(): Promise<ExpenseReccord | null> {
     }
 
     const result = response.results as PageObjectResponse[];
-    return notionPropertiesToObject<ExpenseReccord>(result[0]);
+    return pageObjectResponseToObject<ExpenseReccord>(result[0]);
   } catch (err) {
-    logger.error("Failed to get expense by date");
+    logger.error("Failed to get expense last reccord");
     throw err;
   }
-}
-
-function notionPropertiesToObject<Type>(por: PageObjectResponse): Type {
-  let result = {} as Type;
-  for (const [key, value] of Object.entries(por.properties)) {
-    switch (value.type) {
-      case "title":
-        result = { ...result, [key]: value.title[0].plain_text };
-        break;
-      case "rich_text":
-        result = { ...result, [key]: value.rich_text[0].plain_text };
-        break;
-      case "date":
-        result = { ...result, [key]: value.date?.start ?? "" };
-        break;
-      case "number":
-        result = { ...result, [key]: value.number };
-        break;
-      default:
-        return { ...result, [key]: "" };
-    }
-  }
-  return result;
 }
