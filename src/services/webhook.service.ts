@@ -64,7 +64,10 @@ async function handleEventMessage(
 }
 
 async function summaryTodyExpense(date: Date) {
-  const reccords = await getExpenseByDate(date);
+  const newDate = date;
+  newDate.setHours(0, 0, 0, 0);
+
+  const reccords = await getExpenseByDate(newDate);
   const firstReccord = await getExpenseFirstReccord();
 
   const lastReccordIndex = reccords.length - 1;
