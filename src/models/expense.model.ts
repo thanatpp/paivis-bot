@@ -1,7 +1,17 @@
 export interface ExpenseReccord {
-  Name: string;
-  Category: string;
-  Amount: number;
-  Date: string;
-  Total: number;
+  id: number;
+  name: string;
+  category: string;
+  amount: number;
+  date: string;
+  total: number;
+}
+
+export interface ExpenseTransaction {
+  id: number;
+  name: string;
+  category: string;
+  amount: number;
+  date: string;
+  total: number;
 }
