@@ -43,26 +43,27 @@ async function handleEventMessage(
       const date = new Date();
 
       const lastReccord = await getExpenseLastReccord();
-      let total = lastReccord?.Total ?? 0;
+      let total = lastReccord?.total ?? 0;
       if (ctg !== "note") {
         total += amount;
       }
 
       const reccorded = await createExpense({
-        Name: name,
-        Category: ctg,
-        Amount: Number(amount),
-        Date: date.toISOString(),
-        Total: total,
+        name,
+        category: ctg,
+        amount: Number(amount),
+        date: date.toISOString(),
+        total,
+        id: 0,
       });
 
       const summaryExpense = await summaryTodyExpense(date, total);
       await client.replyMessage(
         replyToken,
         createExpenseBubble(
-          reccorded.Name,
-          reccorded.Category,
-          reccorded.Amount,
+          reccorded.name,
+          reccorded.category,
+          reccorded.amount,
           summaryExpense
         )
       );
@@ -79,19 +80,18 @@ async function summaryTodyExpense(date: Date, totalUsed: number) {
   const lastReccordIndex = reccords.length - 1;
   const lastReccord = reccords[lastReccordIndex];
   const usedToday = reccords
-    .filter((r) => r.Category !== "note")
-    .map((r) => r.Amount)
+    .filter((r) => r.category !== "note")
+    .map((r) => r.amount)
     .reduce((a, b) => a + b, 0);
 
   if (!firstReccord) {
     return [usedToday, +process.env.DAILY_PACE - totalUsed, 1];
   }
 
-  const firstDate = new Date(firstReccord.Date);
+  const firstDate = new Date(firstReccord.date);
   firstDate.setHours(0, 0, 0, 0);
-  const lastDate = new Date(lastReccord.Date);
+  const lastDate = new Date(lastReccord.date);
   lastDate.setHours(0, 0, 0, 0);
-  console.log(firstDate, lastDate);
   const diffDays =
     Number((lastDate.valueOf() - firstDate.valueOf()) / (1000 * 60 * 60 * 24)) +
     1;

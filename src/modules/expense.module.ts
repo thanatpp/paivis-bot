@@ -30,40 +30,40 @@ export async function createExpense(
         database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
       },
       properties: {
-        Name: {
+        name: {
           type: "title",
           title: [
             {
               type: "text",
               text: {
-                content: payload.Name,
+                content: payload.name,
               },
             },
           ],
         },
-        Category: {
+        category: {
           type: "rich_text",
           rich_text: [
             {
               type: "text",
               text: {
-                content: payload.Category,
+                content: payload.category,
               },
             },
           ],
         },
-        Amount: {
+        amount: {
           type: "number",
-          number: payload.Amount,
+          number: payload.amount,
         },
-        Total: {
+        total: {
           type: "number",
-          number: payload.Total,
+          number: payload.total,
         },
-        Date: {
+        date: {
           type: "date",
           date: {
-            start: payload.Date,
+            start: payload.date,
           },
         },
       },
@@ -83,7 +83,7 @@ export async function getExpenseByDate(
     const response = await notion.databases.query({
       database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
       filter: {
-        property: "Date",
+        property: "date",
         date: {
           on_or_after: dateTime.toISOString(),
         },
@@ -97,11 +97,30 @@ export async function getExpenseByDate(
   }
 }
 
+export async function getAllExpense(): Promise<ExpenseReccord[]> {
+  try {
+    let hasMore = true;
+    const results: PageObjectResponse[] = [];
+    while (hasMore) {
+      const response = await notion.databases.query({
+        database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
+        sorts: [{ property: "date", direction: "ascending" }],
+      });
+      results.push(...(response.results as PageObjectResponse[]));
+      hasMore = response.has_more;
+    }
+    return results.map((r) => pageObjectResponseToObject<ExpenseReccord>(r));
+  } catch (err) {
+    logger.error("Failed to get expense by date");
+    throw err;
+  }
+}
+
 export async function getExpenseFirstReccord(): Promise<ExpenseReccord | null> {
   try {
     const response = await notion.databases.query({
       database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
-      sorts: [{ property: "Date", direction: "ascending" }],
+      sorts: [{ property: "date", direction: "ascending" }],
       page_size: 1,
     });
 
@@ -121,7 +140,7 @@ export async function getExpenseLastReccord(): Promise<ExpenseReccord | null> {
   try {
     const response = await notion.databases.query({
       database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
-      sorts: [{ property: "Date", direction: "descending" }],
+      sorts: [{ property: "date", direction: "descending" }],
       page_size: 1,
     });
 
