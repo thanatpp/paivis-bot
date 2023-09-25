@@ -15,6 +15,12 @@ export function pageObjectResponseToObject<Type>(
       case "date":
         result = { ...result, [key]: value.date?.start ?? "" };
         break;
+<<<<<<< HEAD
+=======
+      case "unique_id":
+        result = { ...result, [key]: value.unique_id.number };
+        break;
+>>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
       case "number":
         result = { ...result, [key]: value.number };
         break;

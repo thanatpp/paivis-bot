@@ -30,40 +30,48 @@ export async function createExpense(
         database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
       },
       properties: {
-        Name: {
+        name: {
           type: "title",
           title: [
             {
               type: "text",
               text: {
-                content: payload.Name,
+                content: payload.name,
               },
             },
           ],
         },
-        Category: {
+        category: {
           type: "rich_text",
           rich_text: [
             {
               type: "text",
               text: {
-                content: payload.Category,
+                content: payload.category,
               },
             },
           ],
         },
-        Amount: {
+        amount: {
           type: "number",
-          number: payload.Amount,
+          number: payload.amount,
         },
+<<<<<<< HEAD
         Total: {
           type: "number",
           number: payload.Total,
         },
         Date: {
+=======
+        total: {
+          type: "number",
+          number: payload.total,
+        },
+        date: {
+>>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
           type: "date",
           date: {
-            start: payload.Date,
+            start: payload.date,
           },
         },
       },
@@ -83,7 +91,7 @@ export async function getExpenseByDate(
     const response = await notion.databases.query({
       database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
       filter: {
-        property: "Date",
+        property: "date",
         date: {
           on_or_after: dateTime.toISOString(),
         },
@@ -91,6 +99,28 @@ export async function getExpenseByDate(
     });
     const results = response.results as PageObjectResponse[];
     return results.map((r) => pageObjectResponseToObject<ExpenseReccord>(r));
+<<<<<<< HEAD
+=======
+  } catch (err) {
+    logger.error("Failed to get expense by date");
+    throw err;
+  }
+}
+
+export async function getAllExpense(): Promise<ExpenseReccord[]> {
+  try {
+    let hasMore = true;
+    const results: PageObjectResponse[] = [];
+    while (hasMore) {
+      const response = await notion.databases.query({
+        database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
+        sorts: [{ property: "date", direction: "ascending" }],
+      });
+      results.push(...(response.results as PageObjectResponse[]));
+      hasMore = response.has_more;
+    }
+    return results.map((r) => pageObjectResponseToObject<ExpenseReccord>(r));
+>>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
   } catch (err) {
     logger.error("Failed to get expense by date");
     throw err;
@@ -101,6 +131,7 @@ export async function getExpenseFirstReccord(): Promise<ExpenseReccord | null> {
   try {
     const response = await notion.databases.query({
       database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
+<<<<<<< HEAD
       sorts: [{ property: "Date", direction: "ascending" }],
       page_size: 1,
     });
@@ -122,6 +153,35 @@ export async function getExpenseLastReccord(): Promise<ExpenseReccord | null> {
     const response = await notion.databases.query({
       database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
       sorts: [{ property: "Date", direction: "descending" }],
+=======
+      sorts: [{ property: "date", direction: "ascending" }],
+>>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
+      page_size: 1,
+    });
+
+    if (response.results.length === 0) {
+      return null;
+    }
+
+    const result = response.results as PageObjectResponse[];
+    return pageObjectResponseToObject<ExpenseReccord>(result[0]);
+  } catch (err) {
+<<<<<<< HEAD
+    logger.error("Failed to get expense last reccord");
+    throw err;
+  }
+}
+=======
+    logger.error("Failed to get expense first reccord");
+    throw err;
+  }
+}
+
+export async function getExpenseLastReccord(): Promise<ExpenseReccord | null> {
+  try {
+    const response = await notion.databases.query({
+      database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
+      sorts: [{ property: "date", direction: "descending" }],
       page_size: 1,
     });
 
@@ -136,3 +196,4 @@ export async function getExpenseLastReccord(): Promise<ExpenseReccord | null> {
     throw err;
   }
 }
+>>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad

@@ -43,26 +43,39 @@ async function handleEventMessage(
       const date = new Date();
 
       const lastReccord = await getExpenseLastReccord();
+<<<<<<< HEAD
       let total = lastReccord?.Total ?? 0;
+=======
+      let total = lastReccord?.total ?? 0;
+>>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
       if (ctg !== "note") {
         total += amount;
       }
 
       const reccorded = await createExpense({
+<<<<<<< HEAD
         Name: name,
         Category: ctg,
         Amount: Number(amount),
         Date: date.toISOString(),
         Total: total,
+=======
+        name,
+        category: ctg,
+        amount: Number(amount),
+        date: date.toISOString(),
+        total,
+        id: 0,
+>>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
       });
 
       const summaryExpense = await summaryTodyExpense(date, total);
       await client.replyMessage(
         replyToken,
         createExpenseBubble(
-          reccorded.Name,
-          reccorded.Category,
-          reccorded.Amount,
+          reccorded.name,
+          reccorded.category,
+          reccorded.amount,
           summaryExpense
         )
       );
@@ -79,19 +92,31 @@ async function summaryTodyExpense(date: Date, totalUsed: number) {
   const lastReccordIndex = reccords.length - 1;
   const lastReccord = reccords[lastReccordIndex];
   const usedToday = reccords
+<<<<<<< HEAD
     .filter((r) => r.Category !== "note")
     .map((r) => r.Amount)
+=======
+    .filter((r) => r.category !== "note")
+    .map((r) => r.amount)
+>>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
     .reduce((a, b) => a + b, 0);
 
   if (!firstReccord) {
     return [usedToday, +process.env.DAILY_PACE - totalUsed, 1];
   }
 
+<<<<<<< HEAD
   const firstDate = new Date(firstReccord.Date);
   firstDate.setHours(0, 0, 0, 0);
   const lastDate = new Date(lastReccord.Date);
   lastDate.setHours(0, 0, 0, 0);
   console.log(firstDate, lastDate);
+=======
+  const firstDate = new Date(firstReccord.date);
+  firstDate.setHours(0, 0, 0, 0);
+  const lastDate = new Date(lastReccord.date);
+  lastDate.setHours(0, 0, 0, 0);
+>>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
   const diffDays =
     Number((lastDate.valueOf() - firstDate.valueOf()) / (1000 * 60 * 60 * 24)) +
     1;
