@@ -7,15 +7,15 @@ import {
 import {
   categorys,
   createExpense,
-  getCacheDB,
   getExpenseByDate,
-  getExpenseLastReccord,
   getFirstDateExpense,
   getLastTotalExpense,
   saveCacheDB,
 } from "../modules/expense.module";
 import { createBubble } from "../utils/line.util";
 import Database from "bun:sqlite";
+
+const dailyPace = process.env.DAILY_PACE ? +process.env.DAILY_PACE : 0;
 
 export default async function webhookService(
   req: WebhookRequestBody,
@@ -50,33 +50,6 @@ async function handleEventMessage(
       const name = match[3] ?? "";
       const date = new Date();
 
-<<<<<<< Updated upstream
-      const lastReccord = await getExpenseLastReccord();
-<<<<<<< HEAD
-      let total = lastReccord?.Total ?? 0;
-=======
-      let total = lastReccord?.total ?? 0;
->>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
-      if (ctg !== "note") {
-        total += amount;
-      }
-
-      const reccorded = await createExpense({
-<<<<<<< HEAD
-        Name: name,
-        Category: ctg,
-        Amount: Number(amount),
-        Date: date.toISOString(),
-        Total: total,
-=======
-        name,
-        category: ctg,
-        amount: Number(amount),
-        date: date.toISOString(),
-        total,
-        id: 0,
->>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
-=======
       const total = await getTotal(db, amount, ctg);
       saveCacheDB(db, "total", total.toString());
 
@@ -86,7 +59,6 @@ async function handleEventMessage(
         Amount: amount,
         Date: date.toISOString(),
         Total: total,
->>>>>>> Stashed changes
       });
 
       const summaryExpense = await summaryTodyExpense(db, date, total);
@@ -119,44 +91,22 @@ async function summaryTodyExpense(db: Database, date: Date, totalUsed: number) {
   const lastReccordIndex = reccords.length - 1;
   const lastReccord = reccords[lastReccordIndex];
   const usedToday = reccords
-<<<<<<< Updated upstream
-<<<<<<< HEAD
     .filter((r) => r.Category !== "note")
     .map((r) => r.Amount)
-=======
-    .filter((r) => r.category !== "note")
-    .map((r) => r.amount)
->>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
-=======
-    .filter((r) => r.Category !== "note")
-    .map((r) => r.Amount)
->>>>>>> Stashed changes
     .reduce((a, b) => a + b, 0);
 
   if (!firstDateReccord) {
-    return [usedToday, +process.env.DAILY_PACE - totalUsed, 1];
+    return [usedToday, dailyPace - totalUsed, 1];
   }
 
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-  const firstDate = new Date(firstReccord.Date);
-  firstDate.setHours(0, 0, 0, 0);
-  const lastDate = new Date(lastReccord.Date);
-  lastDate.setHours(0, 0, 0, 0);
-  console.log(firstDate, lastDate);
-=======
-  const firstDate = new Date(firstReccord.date);
-=======
   const firstDate = new Date(firstDateReccord);
->>>>>>> Stashed changes
   firstDate.setHours(0, 0, 0, 0);
   const lastDate = new Date(lastReccord.Date);
   lastDate.setHours(0, 0, 0, 0);
->>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
   const diffDays =
     Number((lastDate.valueOf() - firstDate.valueOf()) / (1000 * 60 * 60 * 24)) +
     1;
-  const pace = +process.env.DAILY_PACE * diffDays - totalUsed;
+  const pace = dailyPace * diffDays - totalUsed;
   return [usedToday, pace, diffDays];
 }
 
