@@ -10,6 +10,8 @@ const notion = new Client({
   logLevel: LogLevel.INFO,
 });
 
+const expenseDatabaseId = process.env.NOTION_EXPENSE_DATABASE_ID ?? "";
+
 export const categorys: {
   [key: string]: string;
 } = {
@@ -28,7 +30,7 @@ export async function createExpense(
     const response = await notion.pages.create({
       parent: {
         type: "database_id",
-        database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
+        database_id: expenseDatabaseId,
       },
       properties: {
         Name: {
@@ -57,27 +59,11 @@ export async function createExpense(
           type: "number",
           number: payload.Amount,
         },
-<<<<<<< Updated upstream
-<<<<<<< HEAD
         Total: {
           type: "number",
           number: payload.Total,
         },
         Date: {
-=======
-        total: {
-=======
-        Total: {
->>>>>>> Stashed changes
-          type: "number",
-          number: payload.Total,
-        },
-<<<<<<< Updated upstream
-        date: {
->>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
-=======
-        Date: {
->>>>>>> Stashed changes
           type: "date",
           date: {
             start: payload.Date,
@@ -98,7 +84,7 @@ export async function getExpenseByDate(
 ): Promise<ExpenseReccord[]> {
   try {
     const response = await notion.databases.query({
-      database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
+      database_id: expenseDatabaseId,
       filter: {
         property: "Date",
         date: {
@@ -108,28 +94,6 @@ export async function getExpenseByDate(
     });
     const results = response.results as PageObjectResponse[];
     return results.map((r) => pageObjectResponseToObject<ExpenseReccord>(r));
-<<<<<<< HEAD
-=======
-  } catch (err) {
-    logger.error("Failed to get expense by date");
-    throw err;
-  }
-}
-
-export async function getAllExpense(): Promise<ExpenseReccord[]> {
-  try {
-    let hasMore = true;
-    const results: PageObjectResponse[] = [];
-    while (hasMore) {
-      const response = await notion.databases.query({
-        database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
-        sorts: [{ property: "Date", direction: "ascending" }],
-      });
-      results.push(...(response.results as PageObjectResponse[]));
-      hasMore = response.has_more;
-    }
-    return results.map((r) => pageObjectResponseToObject<ExpenseReccord>(r));
->>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
   } catch (err) {
     logger.error("Failed to get expense by date");
     throw err;
@@ -139,11 +103,7 @@ export async function getAllExpense(): Promise<ExpenseReccord[]> {
 export async function getExpenseFirstReccord(): Promise<ExpenseReccord | null> {
   try {
     const response = await notion.databases.query({
-      database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
+      database_id: expenseDatabaseId,
       sorts: [{ property: "Date", direction: "ascending" }],
       page_size: 1,
     });
@@ -193,40 +153,8 @@ export async function getLastTotalExpense(
 export async function getExpenseLastReccord(): Promise<ExpenseReccord | null> {
   try {
     const response = await notion.databases.query({
-      database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
+      database_id: expenseDatabaseId,
       sorts: [{ property: "Date", direction: "descending" }],
-<<<<<<< Updated upstream
-=======
-      sorts: [{ property: "date", direction: "ascending" }],
->>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
-      page_size: 1,
-    });
-
-    if (response.results.length === 0) {
-      return null;
-    }
-
-    const result = response.results as PageObjectResponse[];
-    return pageObjectResponseToObject<ExpenseReccord>(result[0]);
-  } catch (err) {
-<<<<<<< HEAD
-    logger.error("Failed to get expense last reccord");
-    throw err;
-  }
-}
-=======
-    logger.error("Failed to get expense first reccord");
-    throw err;
-  }
-}
-
-export async function getExpenseLastReccord(): Promise<ExpenseReccord | null> {
-  try {
-    const response = await notion.databases.query({
-      database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
-      sorts: [{ property: "date", direction: "descending" }],
-=======
->>>>>>> Stashed changes
       page_size: 1,
     });
 
@@ -241,9 +169,6 @@ export async function getExpenseLastReccord(): Promise<ExpenseReccord | null> {
     throw err;
   }
 }
-<<<<<<< Updated upstream
->>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
-=======
 
 export function getCacheDB(db: Database, key: string): string | null {
   try {
@@ -267,4 +192,3 @@ export function saveCacheDB(db: Database, key: string, value: string): void {
     throw err;
   }
 }
->>>>>>> Stashed changes
