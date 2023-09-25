@@ -2,10 +2,10 @@ import Bao from "baojs";
 import webhookRoute from "./routes/webhook.route";
 import { initDatabase } from "./database/sqlite.database";
 
-const db = await initDatabase();
+initDatabase();
 const app = new Bao();
 
-webhookRoute(app, db);
+webhookRoute(app);
 
 const server = app.listen();
 
