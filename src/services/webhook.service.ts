@@ -7,28 +7,36 @@ import {
 import {
   categorys,
   createExpense,
+  getCacheDB,
   getExpenseByDate,
-  getExpenseFirstReccord,
   getExpenseLastReccord,
+  getFirstDateExpense,
+  getLastTotalExpense,
+  saveCacheDB,
 } from "../modules/expense.module";
 import { createBubble } from "../utils/line.util";
+import Database from "bun:sqlite";
 
 export default async function webhookService(
   req: WebhookRequestBody,
-  client: Client
+  client: Client,
+  db: Database
 ) {
   const events = req.events;
   for (const event of events) {
+    console.time("handle event message process time");
     if (event.type === "message") {
-      await handleEventMessage(event.message, event.replyToken, client);
+      await handleEventMessage(event.message, event.replyToken, client, db);
     }
+    console.timeEnd("handle event message process time");
   }
 }
 
 async function handleEventMessage(
   event: EventMessage,
   replyToken: string,
-  client: Client
+  client: Client,
+  db: Database
 ) {
   if (event.type === "text") {
     const text = event.text.trim();
@@ -42,6 +50,7 @@ async function handleEventMessage(
       const name = match[3] ?? "";
       const date = new Date();
 
+<<<<<<< Updated upstream
       const lastReccord = await getExpenseLastReccord();
 <<<<<<< HEAD
       let total = lastReccord?.Total ?? 0;
@@ -67,31 +76,50 @@ async function handleEventMessage(
         total,
         id: 0,
 >>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
+=======
+      const total = await getTotal(db, amount, ctg);
+      saveCacheDB(db, "total", total.toString());
+
+      const reccorded = await createExpense({
+        Name: name,
+        Category: ctg,
+        Amount: amount,
+        Date: date.toISOString(),
+        Total: total,
+>>>>>>> Stashed changes
       });
 
-      const summaryExpense = await summaryTodyExpense(date, total);
+      const summaryExpense = await summaryTodyExpense(db, date, total);
       await client.replyMessage(
         replyToken,
         createExpenseBubble(
-          reccorded.name,
-          reccorded.category,
-          reccorded.amount,
+          reccorded.Name,
+          reccorded.Category,
+          reccorded.Amount,
           summaryExpense
         )
       );
     }
   }
+  console.timeEnd("handleEventMessage");
 }
 
-async function summaryTodyExpense(date: Date, totalUsed: number) {
+async function getTotal(db: Database, amount: number, category: string) {
+  let lastTotoal = (await getLastTotalExpense(db)) ?? 0;
+  const total = category !== "note" ? lastTotoal + amount : lastTotoal;
+  return total;
+}
+
+async function summaryTodyExpense(db: Database, date: Date, totalUsed: number) {
   const newDate = date;
   newDate.setHours(0, 0, 0, 0);
 
   const reccords = await getExpenseByDate(newDate);
-  const firstReccord = await getExpenseFirstReccord();
+  const firstDateReccord = await getFirstDateExpense(db);
   const lastReccordIndex = reccords.length - 1;
   const lastReccord = reccords[lastReccordIndex];
   const usedToday = reccords
+<<<<<<< Updated upstream
 <<<<<<< HEAD
     .filter((r) => r.Category !== "note")
     .map((r) => r.Amount)
@@ -99,12 +127,17 @@ async function summaryTodyExpense(date: Date, totalUsed: number) {
     .filter((r) => r.category !== "note")
     .map((r) => r.amount)
 >>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
+=======
+    .filter((r) => r.Category !== "note")
+    .map((r) => r.Amount)
+>>>>>>> Stashed changes
     .reduce((a, b) => a + b, 0);
 
-  if (!firstReccord) {
+  if (!firstDateReccord) {
     return [usedToday, +process.env.DAILY_PACE - totalUsed, 1];
   }
 
+<<<<<<< Updated upstream
 <<<<<<< HEAD
   const firstDate = new Date(firstReccord.Date);
   firstDate.setHours(0, 0, 0, 0);
@@ -113,8 +146,11 @@ async function summaryTodyExpense(date: Date, totalUsed: number) {
   console.log(firstDate, lastDate);
 =======
   const firstDate = new Date(firstReccord.date);
+=======
+  const firstDate = new Date(firstDateReccord);
+>>>>>>> Stashed changes
   firstDate.setHours(0, 0, 0, 0);
-  const lastDate = new Date(lastReccord.date);
+  const lastDate = new Date(lastReccord.Date);
   lastDate.setHours(0, 0, 0, 0);
 >>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
   const diffDays =

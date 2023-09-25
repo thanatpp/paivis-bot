@@ -3,6 +3,7 @@ import { ExpenseReccord } from "../models/expense.model";
 import { Client, LogLevel } from "@notionhq/client";
 import { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import { pageObjectResponseToObject } from "../utils/notion.util";
+import Database from "bun:sqlite";
 
 const notion = new Client({
   auth: process.env.NOTION_TOKEN,
@@ -30,32 +31,33 @@ export async function createExpense(
         database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
       },
       properties: {
-        name: {
+        Name: {
           type: "title",
           title: [
             {
               type: "text",
               text: {
-                content: payload.name,
+                content: payload.Name,
               },
             },
           ],
         },
-        category: {
+        Category: {
           type: "rich_text",
           rich_text: [
             {
               type: "text",
               text: {
-                content: payload.category,
+                content: payload.Category,
               },
             },
           ],
         },
-        amount: {
+        Amount: {
           type: "number",
-          number: payload.amount,
+          number: payload.Amount,
         },
+<<<<<<< Updated upstream
 <<<<<<< HEAD
         Total: {
           type: "number",
@@ -64,14 +66,21 @@ export async function createExpense(
         Date: {
 =======
         total: {
+=======
+        Total: {
+>>>>>>> Stashed changes
           type: "number",
-          number: payload.total,
+          number: payload.Total,
         },
+<<<<<<< Updated upstream
         date: {
 >>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
+=======
+        Date: {
+>>>>>>> Stashed changes
           type: "date",
           date: {
-            start: payload.date,
+            start: payload.Date,
           },
         },
       },
@@ -91,7 +100,7 @@ export async function getExpenseByDate(
     const response = await notion.databases.query({
       database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
       filter: {
-        property: "date",
+        property: "Date",
         date: {
           on_or_after: dateTime.toISOString(),
         },
@@ -114,7 +123,7 @@ export async function getAllExpense(): Promise<ExpenseReccord[]> {
     while (hasMore) {
       const response = await notion.databases.query({
         database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
-        sorts: [{ property: "date", direction: "ascending" }],
+        sorts: [{ property: "Date", direction: "ascending" }],
       });
       results.push(...(response.results as PageObjectResponse[]));
       hasMore = response.has_more;
@@ -131,7 +140,10 @@ export async function getExpenseFirstReccord(): Promise<ExpenseReccord | null> {
   try {
     const response = await notion.databases.query({
       database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
       sorts: [{ property: "Date", direction: "ascending" }],
       page_size: 1,
     });
@@ -148,11 +160,42 @@ export async function getExpenseFirstReccord(): Promise<ExpenseReccord | null> {
   }
 }
 
+export async function getFirstDateExpense(
+  db: Database
+): Promise<string | null> {
+  const firstDateFromCacheDB = getCacheDB(db, "first_date");
+  if (firstDateFromCacheDB) {
+    return firstDateFromCacheDB;
+  }
+
+  const reccord = await getExpenseFirstReccord();
+  const date = reccord ? reccord.Date : new Date().toISOString();
+
+  saveCacheDB(db, "first_date", date);
+  return date;
+}
+
+export async function getLastTotalExpense(
+  db: Database
+): Promise<number | null> {
+  const firstDateFromCacheDB = getCacheDB(db, "total");
+  if (firstDateFromCacheDB) {
+    return Number(firstDateFromCacheDB);
+  }
+
+  const reccord = await getExpenseLastReccord();
+  const total = reccord ? reccord.Total : 0;
+
+  saveCacheDB(db, "total", total.toString());
+  return total;
+}
+
 export async function getExpenseLastReccord(): Promise<ExpenseReccord | null> {
   try {
     const response = await notion.databases.query({
       database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
       sorts: [{ property: "Date", direction: "descending" }],
+<<<<<<< Updated upstream
 =======
       sorts: [{ property: "date", direction: "ascending" }],
 >>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
@@ -182,6 +225,8 @@ export async function getExpenseLastReccord(): Promise<ExpenseReccord | null> {
     const response = await notion.databases.query({
       database_id: process.env.NOTION_EXPENSE_DATABASE_ID,
       sorts: [{ property: "date", direction: "descending" }],
+=======
+>>>>>>> Stashed changes
       page_size: 1,
     });
 
@@ -196,4 +241,30 @@ export async function getExpenseLastReccord(): Promise<ExpenseReccord | null> {
     throw err;
   }
 }
+<<<<<<< Updated upstream
 >>>>>>> 8e58848de0b31cb9c906e2f52ad4073b8cc273ad
+=======
+
+export function getCacheDB(db: Database, key: string): string | null {
+  try {
+    const query = db.query("SELECT value FROM cache WHERE key=?1");
+    const total = <{ value: string } | null>query.get(key);
+    return total ? total.value : total;
+  } catch (err) {
+    logger.error("Failed to get total from cache db");
+    throw err;
+  }
+}
+
+export function saveCacheDB(db: Database, key: string, value: string): void {
+  try {
+    const insert = db.prepare(
+      `INSERT INTO cache VALUES (?1, ?2) ON CONFLICT do UPDATE SET value=?2`
+    );
+    insert.run(key, value);
+  } catch (err) {
+    logger.error("Failed to save total to cache db");
+    throw err;
+  }
+}
+>>>>>>> Stashed changes
